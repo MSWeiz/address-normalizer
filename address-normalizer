@@ -1,0 +1,61 @@
+from pullenti_wrapper.langs import (
+    set_langs,
+    RU,
+    EN
+)
+from pullenti_wrapper.referent import Referent
+set_langs([RU])
+from ipymarkup import show_span_ascii_markup as show_markup
+from pullenti_wrapper.processor import (
+    Processor,
+    GEO,
+    ADDRESS
+)
+
+result = Processor([ADDRESS, GEO])
+
+
+def display_shortcuts(referent, level=0):
+    for key in referent.__shortcuts__:
+        value = getattr(referent, key)
+        if value in (None, 0, -1):
+            continue
+        if isinstance(value, Referent):
+            print('{offset}{key}:'.format(
+                offset='  ' * level,
+                key=key
+            ))
+            display_shortcuts(value, level + 1)
+        else:
+            print('{offset}{key}: {value!r}'.format(
+                offset='  ' * level,
+                key=key,
+                value=value
+            ))
+
+
+def process_display(line, analyzers):
+    processor = Processor(analyzers)
+    result = processor(line)
+    spans = [_.span for _ in result.matches]
+    show_markup(result.text, spans)
+
+    assert len(result.matches) == 1
+    referent = result.matches[0].referent
+    display_shortcuts(referent)
+
+lines = [
+    'г. Москва ул Оулябрьская д 105 кв 154',
+    'г Москва ул Затонная д2 кв150',
+    'г. Москва ул. Приображенский вал 14-66',
+    'г.Москва прд Зубовский д 3 кв.51',
+    'г. Санкт-Петербург ул. проспект Шуваловский д. 41 кор. 1 кв. 739',
+    'ул Профсоюзная 1726',
+    'Ленинский20',
+    'Серпуховский вал 6199',
+    'Москва улица Большая Спасская 10 корпус 1 квартира 430'
+]
+
+
+for line in lines:
+    process_display(line, [GEO, ADDRESS])
