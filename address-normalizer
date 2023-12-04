@@ -16,22 +16,36 @@ result = Processor([ADDRESS, GEO])
 
 
 def display_shortcuts(referent, level=0):
+    tmp = {}
+    a = ""
+    b = ""
     for key in referent.__shortcuts__:
         value = getattr(referent, key)
         if value in (None, 0, -1):
             continue
         if isinstance(value, Referent):
-            print('{offset}{key}:'.format(
-                offset='  ' * level,
-                key=key
-            ))
             display_shortcuts(value, level + 1)
         else:
-            print('{offset}{key}: {value!r}'.format(
-                offset='  ' * level,
-                key=key,
-                value=value
-            ))
+            if key == 'type':
+                a = value
+            if key == 'name':
+                b = value
+                # print('ok', value)
+            if key == 'house':
+                a = "дом"
+                b = value
+                tmp[a] = b
+            if key == 'flat':
+                a = "квартира"
+                b = value
+                # print('ok', value)
+                tmp[a] = b
+            if key == 'corpus':
+                a = "корпус"
+                b = value
+                tmp[a] = b
+        tmp[a] = b
+        addr.append(tmp)
 
 
 def process_display(line, analyzers):
@@ -45,17 +59,18 @@ def process_display(line, analyzers):
     display_shortcuts(referent)
 
 lines = [
-    'г. Москва ул Оулябрьская д 105 кв 154',
+    'г. Москва ул Октябрьская д 105 кв 154',
     'г Москва ул Затонная д2 кв150',
-    'г. Москва ул. Приображенский вал 14-66',
-    'г.Москва прд Зубовский д 3 кв.51',
-    'г. Санкт-Петербург ул. проспект Шуваловский д. 41 кор. 1 кв. 739',
-    'ул Профсоюзная 1726',
-    'Ленинский20',
-    'Серпуховский вал 6199',
-    'Москва улица Большая Спасская 10 корпус 1 квартира 430'
+    'г. Москва ул. Приображенский вал 14-66'
 ]
 
-
+addr = []
 for line in lines:
     process_display(line, [GEO, ADDRESS])
+
+li = []
+for i in addr:
+  if i not in li:
+    li.append(i)
+
+print(li)
